@@ -4,6 +4,8 @@ const matchSchema = new mongoose.Schema({
   team1Id: { type: mongoose.Schema.Types.ObjectId, ref: "Team", required: true, index: true },
   team2Id: { type: mongoose.Schema.Types.ObjectId, ref: "Team", required: true, index: true },
   matchDate: { type: Date, required: true, index: true },
+  matchNumber: { type: Number, default: null, index: true },
+  venue: { type: String, default: "" },
   status: {
     type: String,
     enum: ["prediction_open", "in_progress", "completed"],

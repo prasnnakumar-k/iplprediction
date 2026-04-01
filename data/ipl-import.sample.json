@@ -1,0 +1,30 @@
+{
+  "teams": [
+    { "name": "Chennai Super Kings" },
+    { "name": "Mumbai Indians" },
+    { "name": "Royal Challengers Bengaluru" },
+    { "name": "Kolkata Knight Riders" }
+  ],
+  "players": [
+    { "name": "MS Dhoni", "team": "Chennai Super Kings" },
+    { "name": "Ruturaj Gaikwad", "team": "Chennai Super Kings" },
+    { "name": "Rohit Sharma", "team": "Mumbai Indians" },
+    { "name": "Jasprit Bumrah", "team": "Mumbai Indians" },
+    { "name": "Virat Kohli", "team": "Royal Challengers Bengaluru" },
+    { "name": "Andre Russell", "team": "Kolkata Knight Riders" }
+  ],
+  "matches": [
+    {
+      "team1": "Chennai Super Kings",
+      "team2": "Mumbai Indians",
+      "matchDate": "2026-04-05T14:00:00.000Z",
+      "status": "prediction_open"
+    },
+    {
+      "team1": "Royal Challengers Bengaluru",
+      "team2": "Kolkata Knight Riders",
+      "matchDate": "2026-04-06T14:00:00.000Z",
+      "status": "prediction_open"
+    }
+  ]
+}

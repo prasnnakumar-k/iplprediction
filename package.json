@@ -1,0 +1,16 @@
+{
+  "name": "iplprediction",
+  "version": "1.0.0",
+  "description": "Manual IPL prediction platform with user/admin split",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check app.js && node --check admin.js",
+    "import:data": "node scripts/import-fixtures.js data/ipl-2026.json"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "mongoose": "^8.19.2"
+  }
+}

@@ -59,8 +59,9 @@ The user form dynamically limits:
 ## Run
 
 ```bash
+cd /path/to/iplprediction
 npm install
-node server.js
+npm start
 ```
 
 Open:
@@ -71,3 +72,49 @@ Open:
 
 - `MONGO_URI` (default: `mongodb://127.0.0.1:27017/cricket_predictor`)
 - `ADMIN_TOKEN` (default: `admin-secret`)
+
+
+> If you get `ENOENT: no such file or directory, open '.../package.json'`, you are running commands outside the project folder. `cd` into the folder that contains `server.js` and `package.json` first.
+
+
+## One-command data import (teams + players + fixtures)
+
+1) Keep MongoDB running on `127.0.0.1:27017` (or set `MONGO_URI`).
+2) Edit `data/ipl-2026.json` with your IPL teams and fixtures (supports nested `teams[].players`).
+3) Run:
+
+```bash
+npm run import:data
+```
+
+You can also import a custom file:
+
+```bash
+node scripts/import-fixtures.js /full/path/to/your-file.json
+```
+
+JSON format:
+
+```json
+{
+  "teams": [
+    { "name": "Chennai Super Kings", "short": "CSK", "players": ["MS Dhoni", "Ruturaj Gaikwad"] },
+    { "name": "Mumbai Indians", "short": "MI", "players": ["Rohit Sharma", "Jasprit Bumrah"] }
+  ],
+  "fixtures": [
+    {
+      "matchNumber": 1,
+      "date": "2026-04-05",
+      "time": "19:30",
+      "team1": "Chennai Super Kings",
+      "team2": "Mumbai Indians",
+      "venue": "Chennai",
+      "status": "upcoming"
+    }
+  ]
+}
+```
+
+Admin UI token note:
+- In `/admin`, enter `admin-secret` unless you changed `ADMIN_TOKEN` in environment.
+- Your provided IPL 2026 dataset is committed at `data/ipl-2026.json`.

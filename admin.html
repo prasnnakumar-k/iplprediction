@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IPL Predictor - Admin</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #111; color: #fff; margin: 0; }
+    .container { max-width: 900px; margin: 0 auto; padding: 16px; }
+    .card { background: #222; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    input, select, button { width: 100%; padding: 10px; margin: 6px 0; border-radius: 8px; border: none; }
+    button { background: #444; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔐 Admin Result Management</h1>
+    <div class="card">
+      <input id="token" placeholder="Admin token" />
+      <select id="matchSelect"></select>
+      <input id="actualTossWinner" placeholder="Actual toss winner" />
+      <input id="actualMatchWinner" placeholder="Actual match winner" />
+      <input id="actualManOfTheMatch" placeholder="Actual Man of the Match" />
+      <input id="actualHighestRuns" placeholder="Top scorer" />
+      <input id="actualMostWickets" placeholder="Top wicket taker" />
+      <input id="finalTeam1Score" type="number" placeholder="Final Team 1 score" />
+      <input id="finalTeam2Score" type="number" placeholder="Final Team 2 score" />
+      <button onclick="submitResult()">Submit Result</button>
+      <button onclick="finalizeResult()">Finalize Result</button>
+      <p id="message"></p>
+    </div>
+  </div>
+  <script src="admin.js"></script>
+</body>
+</html>

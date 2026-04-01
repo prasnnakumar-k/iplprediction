@@ -3,70 +3,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IPL Predictor</title>
+  <title>IPL Predictor - User</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; background: #0d1321; color: #fff; }
-    .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .container { max-width: 900px; margin: 0 auto; padding: 16px; }
     .card { background: #1d2d44; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
     input, select, button { width: 100%; padding: 10px; margin: 6px 0; border-radius: 8px; border: none; }
     button { background: #3e5c76; color: white; cursor: pointer; }
-    button:hover { background: #4f7090; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .muted { color: #c0d6df; font-size: 14px; }
-    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🏏 IPL Manual Prediction Platform</h1>
+    <h1>🏏 IPL Prediction (User)</h1>
+
     <div class="card">
-      <h3>Login</h3>
+      <h3>User Login</h3>
       <input id="name" placeholder="Enter your name" />
-      <label><input type="checkbox" id="isAdmin" style="width:auto"/> Login as admin</label>
       <button onclick="login()">Continue</button>
       <p id="userState" class="muted"></p>
     </div>
 
-    <div class="grid">
-      <div class="card">
-        <h3>Prediction Phase</h3>
-        <select id="matchSelect"></select>
-        <input id="tossWinner" placeholder="Who will win toss?" />
-        <input id="matchWinner" placeholder="Who will win match?" />
-        <input id="motm" placeholder="Man of the Match" />
-        <input id="mostWickets" placeholder="Most wickets player" />
-        <input id="highestRuns" placeholder="Highest runs player" />
-        <input id="team1Score" type="number" placeholder="Predicted team1 score" />
-        <input id="team2Score" type="number" placeholder="Predicted team2 score" />
-        <button onclick="submitPrediction()">Submit Prediction</button>
-        <p id="predictMsg" class="muted"></p>
-      </div>
-
-      <div class="card">
-        <h3>Admin Result Entry</h3>
-        <input id="adminToken" placeholder="Admin token" />
-        <select id="adminMatchSelect"></select>
-        <input id="actualTossWinner" placeholder="Actual toss winner" />
-        <input id="actualMatchWinner" placeholder="Actual match winner" />
-        <input id="actualMotm" placeholder="Actual Man of the Match" />
-        <input id="actualMostWickets" placeholder="Player with most wickets" />
-        <input id="actualHighestRuns" placeholder="Player with highest runs" />
-        <input id="finalTeam1Score" type="number" placeholder="Final team1 score" />
-        <input id="finalTeam2Score" type="number" placeholder="Final team2 score" />
-        <button onclick="submitResult()">Save Result + Evaluate</button>
-        <button onclick="finalizeResult()">Finalize Result</button>
-        <p id="adminMsg" class="muted"></p>
-      </div>
-    </div>
-
     <div class="card">
-      <h3>Leaderboard</h3>
-      <div id="leaderboard"></div>
-    </div>
+      <h3>Prediction Phase</h3>
+      <select id="matchSelect"></select>
 
-    <div class="card">
-      <h3>User vs Actual</h3>
-      <div id="comparison" class="muted">Submit prediction and wait for admin result.</div>
+      <label>Toss Winner</label>
+      <select id="tossWinner"></select>
+
+      <label>Match Winner</label>
+      <select id="matchWinner"></select>
+
+      <label>Man of the Match</label>
+      <select id="motm"></select>
+
+      <label>Highest Run Scorer</label>
+      <select id="highestRuns"></select>
+
+      <label>Highest Wicket Taker</label>
+      <select id="mostWickets"></select>
+
+      <label>Predicted Team 1 Score</label>
+      <input id="team1Score" type="number" min="0" />
+
+      <label>Predicted Team 2 Score</label>
+      <input id="team2Score" type="number" min="0" />
+
+      <button onclick="submitPrediction()">Submit Prediction</button>
+      <p id="predictMsg" class="muted"></p>
+      <p id="predictState" class="muted"></p>
     </div>
   </div>
 

@@ -1,16 +1,15 @@
 const mongoose = require("mongoose");
 
 const matchSchema = new mongoose.Schema({
-  series: { type: String, required: true, trim: true },
-  team1: { type: String, required: true, trim: true },
-  team2: { type: String, required: true, trim: true },
-  venue: { type: String, default: "TBD" },
-  startTime: { type: Date, required: true },
+  team1Id: { type: mongoose.Schema.Types.ObjectId, ref: "Team", required: true, index: true },
+  team2Id: { type: mongoose.Schema.Types.ObjectId, ref: "Team", required: true, index: true },
+  matchDate: { type: Date, required: true, index: true },
   status: {
     type: String,
     enum: ["prediction_open", "in_progress", "completed"],
-    default: "prediction_open"
+    default: "prediction_open",
+    index: true
   }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model("Match", matchSchema);

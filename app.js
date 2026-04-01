@@ -1,5 +1,6 @@
 const API = "";
 let currentUser = null;
+let matchDetails = null;
 
 async function api(path, options = {}) {
   const res = await fetch(`${API}${path}`, {
@@ -11,13 +12,17 @@ async function api(path, options = {}) {
   return data;
 }
 
+function fillSelect(id, options, valueField = "name", labelField = "name") {
+  const select = document.getElementById(id);
+  select.innerHTML = options.map(o => `<option value="${o[valueField]}">${o[labelField]}</option>`).join("");
+}
+
 async function login() {
   try {
     const name = document.getElementById("name").value.trim();
-    const isAdmin = document.getElementById("isAdmin").checked;
-    currentUser = await api("/signup", { method: "POST", body: JSON.stringify({ name, isAdmin }) });
+    currentUser = await api("/signup", { method: "POST", body: JSON.stringify({ name }) });
     document.getElementById("userState").textContent = `Logged in as ${currentUser.name}`;
-    await refreshComparison();
+    await refreshPredictionState();
   } catch (e) {
     document.getElementById("userState").textContent = e.message;
   }
@@ -25,18 +30,57 @@ async function login() {
 
 async function loadMatches() {
   const matches = await api("/matches");
-  const options = matches.map(m => `<option value="${m._id}">${m.team1} vs ${m.team2} (${new Date(m.startTime).toLocaleString()}) [${m.status}]</option>`).join("");
-  document.getElementById("matchSelect").innerHTML = options;
-  document.getElementById("adminMatchSelect").innerHTML = options;
+  const predictionOpen = matches.filter(m => m.status === "prediction_open");
+  const select = document.getElementById("matchSelect");
+
+  if (!predictionOpen.length) {
+    select.innerHTML = "<option>No open matches</option>";
+    document.getElementById("predictMsg").textContent = "No upcoming matches open for predictions.";
+    return;
+  }
+
+  select.innerHTML = predictionOpen
+    .map(m => `<option value="${m._id}">${m.team1?.name || "Team 1"} vs ${m.team2?.name || "Team 2"} (${new Date(m.matchDate).toLocaleString()})</option>`)
+    .join("");
+
+  await loadMatchDetails();
+}
+
+async function loadMatchDetails() {
+  const matchId = document.getElementById("matchSelect").value;
+  if (!matchId) return;
+
+  const details = await api(`/match/${matchId}`);
+  matchDetails = details;
+
+  const teams = details.teams || [];
+  const players = details.players || [];
+
+  fillSelect("tossWinner", teams);
+  fillSelect("matchWinner", teams);
+
+  if (!players.length) {
+    document.getElementById("predictMsg").textContent = "Players are not available for this match yet. Contact admin.";
+    ["motm", "highestRuns", "mostWickets"].forEach(id => {
+      document.getElementById(id).innerHTML = "<option value=''>No players available</option>";
+    });
+  } else {
+    document.getElementById("predictMsg").textContent = "";
+    fillSelect("motm", players);
+    fillSelect("highestRuns", players);
+    fillSelect("mostWickets", players);
+  }
+
+  await refreshPredictionState();
 }
 
 function getPredictionPayload() {
   return {
-    tossWinner: document.getElementById("tossWinner").value.trim(),
-    matchWinner: document.getElementById("matchWinner").value.trim(),
-    manOfTheMatch: document.getElementById("motm").value.trim(),
-    mostWickets: document.getElementById("mostWickets").value.trim(),
-    highestRuns: document.getElementById("highestRuns").value.trim(),
+    tossWinner: document.getElementById("tossWinner").value,
+    matchWinner: document.getElementById("matchWinner").value,
+    manOfTheMatch: document.getElementById("motm").value,
+    highestRuns: document.getElementById("highestRuns").value,
+    mostWickets: document.getElementById("mostWickets").value,
     team1Score: Number(document.getElementById("team1Score").value),
     team2Score: Number(document.getElementById("team2Score").value)
   };
@@ -46,89 +90,44 @@ async function submitPrediction() {
   const msg = document.getElementById("predictMsg");
   try {
     if (!currentUser) throw new Error("Please login first");
-    const matchId = document.getElementById("matchSelect").value;
+    if (!matchDetails || matchDetails.match.status !== "prediction_open") {
+      throw new Error("This match is not accepting predictions");
+    }
+
+    const answers = getPredictionPayload();
+    if (Object.values(answers).some(v => v === "" || Number.isNaN(v))) {
+      throw new Error("All fields are mandatory");
+    }
+
     await api("/predictions", {
       method: "POST",
-      body: JSON.stringify({ userId: currentUser._id, matchId, answers: getPredictionPayload() })
+      body: JSON.stringify({ userId: currentUser._id, matchId: matchDetails.match._id, answers })
     });
-    msg.textContent = "Prediction submitted.";
-    await refreshComparison();
+
+    msg.textContent = "Prediction submitted successfully.";
+    await refreshPredictionState();
   } catch (e) {
     msg.textContent = e.message;
   }
 }
 
-async function submitResult() {
-  const msg = document.getElementById("adminMsg");
-  try {
-    const matchId = document.getElementById("adminMatchSelect").value;
-    const token = document.getElementById("adminToken").value.trim();
-    await api(`/admin/results/${matchId}`, {
-      method: "POST",
-      headers: { "x-admin-token": token },
-      body: JSON.stringify({
-        actualTossWinner: document.getElementById("actualTossWinner").value.trim(),
-        actualMatchWinner: document.getElementById("actualMatchWinner").value.trim(),
-        actualManOfTheMatch: document.getElementById("actualMotm").value.trim(),
-        actualMostWickets: document.getElementById("actualMostWickets").value.trim(),
-        actualHighestRuns: document.getElementById("actualHighestRuns").value.trim(),
-        finalTeam1Score: Number(document.getElementById("finalTeam1Score").value),
-        finalTeam2Score: Number(document.getElementById("finalTeam2Score").value)
-      })
-    });
-    msg.textContent = "Results saved and evaluations updated.";
-    await renderLeaderboard();
-    await refreshComparison();
-  } catch (e) {
-    msg.textContent = e.message;
-  }
-}
-
-async function finalizeResult() {
-  const msg = document.getElementById("adminMsg");
-  try {
-    const matchId = document.getElementById("adminMatchSelect").value;
-    const token = document.getElementById("adminToken").value.trim();
-    await api(`/admin/results/${matchId}/finalize`, { method: "POST", headers: { "x-admin-token": token } });
-    msg.textContent = "Result finalized.";
-  } catch (e) {
-    msg.textContent = e.message;
-  }
-}
-
-async function renderLeaderboard() {
-  const users = await api("/leaderboard");
-  document.getElementById("leaderboard").innerHTML = users
-    .map((u, i) => `<div>${i + 1}. ${u.name} — ${u.points} pts</div>`)
-    .join("") || "No users yet.";
-}
-
-async function refreshComparison() {
-  if (!currentUser) return;
-  const matchId = document.getElementById("matchSelect").value;
-  if (!matchId) return;
-  const [prediction, result] = await Promise.all([
-    api(`/matches/${matchId}/predictions/${currentUser._id}`),
-    api(`/matches/${matchId}/results`)
-  ]);
+async function refreshPredictionState() {
+  if (!currentUser || !matchDetails) return;
+  const prediction = await api(`/matches/${matchDetails.match._id}/predictions/${currentUser._id}`);
+  const info = document.getElementById("predictState");
 
   if (!prediction) {
-    document.getElementById("comparison").textContent = "No prediction submitted for selected match.";
+    info.textContent = "No prediction submitted for selected match.";
     return;
   }
 
-  const lines = [
-    `<div><strong>Your Score:</strong> ${prediction.score || 0}</div>`,
-    `<div><strong>Breakdown:</strong> ${JSON.stringify(prediction.scoreBreakdown || {})}</div>`,
-    `<div><strong>Your Answers:</strong> ${JSON.stringify(prediction.answers)}</div>`,
-    `<div><strong>Actual Results:</strong> ${result ? JSON.stringify(result) : "Not declared"}</div>`
-  ];
-  document.getElementById("comparison").innerHTML = lines.join("");
+  info.textContent = prediction.evaluatedAt
+    ? `Prediction submitted and evaluated. Score: ${prediction.score}`
+    : "Prediction submitted. Evaluation pending admin results.";
 }
 
-document.getElementById("matchSelect").addEventListener("change", refreshComparison);
+document.getElementById("matchSelect").addEventListener("change", loadMatchDetails);
 
 (async function init() {
   await loadMatches();
-  await renderLeaderboard();
 })();

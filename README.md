@@ -1,26 +1,60 @@
-# 🏏 CricPredict — Manual IPL Prediction Platform
+# 🏏 CricPredict — Role-Separated IPL Prediction Platform
 
-This refactor removes third-party sports API dependencies and turns the app into a manual workflow:
+## What this version enforces
 
-- Users submit predictions through a mandatory questionnaire.
-- Admins manually enter final results.
-- The system evaluates predictions and updates leaderboard points.
+- **User UI (`/`)**: prediction-only flow.
+- **Admin UI (`/admin`)**: isolated result-entry and finalization controls.
+- **No admin fields on public page**.
+- **No third-party sports APIs**; data is manually managed.
 
-## Key Capabilities
+## Data Model
 
-- **Prediction questionnaire (required fields):**
-  - Toss winner
-  - Match winner
-  - Man of the Match
-  - Most wickets player
-  - Highest runs player
-  - Team 1 and Team 2 score predictions
-- **One prediction per user per match** (duplicate submission blocked).
-- **Prediction locking** after match start time or non-open status.
-- **Admin-only result entry** using `x-admin-token` header.
-- **Result finalization** to prevent accidental edits.
-- **Evaluation engine** with configurable scoring.
-- **Leaderboard aggregation** from stored user points.
+- **Teams**: `id`, `name`
+- **Players**: `id`, `name`, `teamId`
+- **Matches**: `id`, `team1Id`, `team2Id`, `matchDate`, `status`
+- **Predictions**: `userId`, `matchId`, questionnaire answers, score, breakdown
+- **MatchResult**: admin-entered ground truth + finalization/audit metadata
+
+## Dynamic Prediction Behavior
+
+`GET /match/:id` returns:
+
+```json
+{
+  "match": {},
+  "teams": [],
+  "players": []
+}
+```
+
+The user form dynamically limits:
+- Toss winner/match winner → only the two match teams
+- MOTM/top scorer/top wicket taker → only players from those teams
+
+## Security and Validation
+
+- Admin APIs require `x-admin-token`
+- Prediction blocked after match start or when not `prediction_open`
+- Duplicate prediction per user/match prevented
+- Invalid team/player selections rejected
+- Result overwrite blocked unless `force=true`
+
+## Endpoints
+
+### User
+- `POST /signup`
+- `GET /matches`
+- `GET /match/:id`
+- `POST /predictions`
+- `GET /matches/:matchId/predictions/:userId`
+- `GET /leaderboard`
+
+### Admin
+- `POST /admin/teams`
+- `POST /admin/players`
+- `POST /admin/matches`
+- `POST /admin/match-result`
+- `PUT /admin/finalize-result`
 
 ## Run
 
@@ -29,24 +63,11 @@ npm install
 node server.js
 ```
 
-Open: `http://localhost:5000`
+Open:
+- User: `http://localhost:5000/`
+- Admin: `http://localhost:5000/admin`
 
-## Environment
+## Env
 
-- `MONGO_URI` (optional, default: `mongodb://127.0.0.1:27017/cricket_predictor`)
-- `ADMIN_TOKEN` (optional, default: `admin-secret`)
-
-## API Summary
-
-- `POST /signup`
-- `GET /matches`
-- `POST /predictions`
-- `GET /matches/:matchId/predictions/:userId`
-- `POST /admin/results/:matchId` (admin)
-- `POST /admin/results/:matchId/finalize` (admin)
-- `GET /matches/:matchId/results`
-- `GET /leaderboard`
-
-Legacy compatibility endpoints remain:
-- `POST /predict`
-- `POST /result` (admin)
+- `MONGO_URI` (default: `mongodb://127.0.0.1:27017/cricket_predictor`)
+- `ADMIN_TOKEN` (default: `admin-secret`)

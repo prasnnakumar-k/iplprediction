@@ -156,7 +156,7 @@ app.get("/admin", (_req, res) => {
 
 app.post("/signup", async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, isAdmin = false } = req.body;
     if (!name) return res.status(400).json({ error: "Name required" });
     let user = await User.findOne({ name: name.trim() });
     if (!user) user = await User.create({ name: name.trim() });

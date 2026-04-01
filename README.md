@@ -1,86 +1,52 @@
-# 🏏 CricPredict — IPL & Cricket Prediction App
+# 🏏 CricPredict — Manual IPL Prediction Platform
 
-A beautiful, real-time cricket prediction site supporting IPL, World Cup, and Test series.
+This refactor removes third-party sports API dependencies and turns the app into a manual workflow:
 
----
+- Users submit predictions through a mandatory questionnaire.
+- Admins manually enter final results.
+- The system evaluates predictions and updates leaderboard points.
 
-## Features
-- 🔴 **Live scores** — real-time match data via CricAPI (free)
-- 🎯 **Score prediction** — predict the match winner + first-innings score
-- ⭐ **Man of the Match** — pick your star player before the game
-- 🏆 **Leaderboard** — points system: 100 pts for correct winner, 50 pts for score within 5 runs
-- 💾 **Works offline too** — localStorage fallback when no server running
-- 🔄 **Auto-refreshes** every 60 seconds
+## Key Capabilities
 
----
+- **Prediction questionnaire (required fields):**
+  - Toss winner
+  - Match winner
+  - Man of the Match
+  - Most wickets player
+  - Highest runs player
+  - Team 1 and Team 2 score predictions
+- **One prediction per user per match** (duplicate submission blocked).
+- **Prediction locking** after match start time or non-open status.
+- **Admin-only result entry** using `x-admin-token` header.
+- **Result finalization** to prevent accidental edits.
+- **Evaluation engine** with configurable scoring.
+- **Leaderboard aggregation** from stored user points.
 
-## Quick Start
+## Run
 
-### 1. Install & run the backend
 ```bash
 npm install
 node server.js
-# → Server running on port 5000
-# → MongoDB Connected ✅
 ```
 
-### 2. Get a FREE cricket API key
-1. Go to **https://cricapi.com** → Sign up (free)
-2. Copy your API key
-3. Open `public/app.js` and paste it:
-```js
-const CRIC_API_KEY = "your_key_here";
-```
+Open: `http://localhost:5000`
 
-### 3. Connect frontend to backend (optional)
-In `public/app.js`:
-```js
-const SERVER_URL = "http://localhost:5000";
-```
+## Environment
 
-### 4. Open in browser
-Visit `http://localhost:5000`
+- `MONGO_URI` (optional, default: `mongodb://127.0.0.1:27017/cricket_predictor`)
+- `ADMIN_TOKEN` (optional, default: `admin-secret`)
 
----
+## API Summary
 
-## Free API Options
-| API | Free Tier | Best For |
-|-----|-----------|---------|
-| **CricAPI** (cricapi.com) | 100 calls/day | IPL live scores |
-| **CricketData** (cricketdata.org) | 100 calls/day | All formats |
-| **Rapid API — Cricket Live Line** | Free tier available | More data |
+- `POST /signup`
+- `GET /matches`
+- `POST /predictions`
+- `GET /matches/:matchId/predictions/:userId`
+- `POST /admin/results/:matchId` (admin)
+- `POST /admin/results/:matchId/finalize` (admin)
+- `GET /matches/:matchId/results`
+- `GET /leaderboard`
 
----
-
-## Points System
-| Prediction | Points |
-|-----------|--------|
-| Correct match winner | 100 pts |
-| Score within ±5 runs | 50 pts |
-| Score within ±15 runs | 25 pts |
-| Score within ±30 runs | 10 pts |
-| Correct MOTM | 75 pts |
-
----
-
-## Project Structure
-```
-cricket-predictor/
-├── public/
-│   ├── index.html     ← Beautiful dark UI
-│   └── app.js         ← All frontend logic + API integration
-├── models/
-│   ├── User.js
-│   └── Prediction.js
-├── server.js          ← Express + MongoDB backend
-└── package.json
-```
-
----
-
-## Future Roadmap
-- [ ] ICC World Cup 2026 predictions
-- [ ] Test series multi-day predictions
-- [ ] Fantasy squad builder
-- [ ] Push notifications for match start
-- [ ] Social sharing of predictions
+Legacy compatibility endpoints remain:
+- `POST /predict`
+- `POST /result` (admin)

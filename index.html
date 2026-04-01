@@ -3,662 +3,73 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CricPredict — IPL & World Cup Predictor</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>IPL Predictor</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --primary: #7c3aed;
-      --primary-light: #ede9fe;
-      --primary-dark: #5b21b6;
-      --accent: #f59e0b;
-      --accent-light: #fef3c7;
-      --success: #10b981;
-      --success-light: #d1fae5;
-      --danger: #ef4444;
-      --danger-light: #fee2e2;
-      --bg: #0f0f1a;
-      --bg2: #161625;
-      --bg3: #1e1e35;
-      --border: rgba(255,255,255,0.08);
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
-      --card-shadow: 0 4px 24px rgba(0,0,0,0.4);
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    /* ===== LAYOUT ===== */
-    header {
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 64px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--primary);
-    }
-    .logo-icon {
-      width: 36px;
-      height: 36px;
-      background: linear-gradient(135deg, var(--primary), #a78bfa);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-    }
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .btn {
-      padding: 8px 18px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      border: none;
-      transition: all 0.15s;
-    }
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
-    }
-    .btn-primary:hover { background: var(--primary-dark); }
-    .btn-ghost {
-      background: transparent;
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-    }
-    .btn-ghost:hover { background: var(--bg3); color: var(--text); }
-
-    .main-layout {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px;
-      display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 24px;
-      align-items: start;
-    }
-    @media (max-width: 900px) {
-      .main-layout { grid-template-columns: 1fr; }
-      .sidebar { order: -1; }
-    }
-
-    /* ===== CARDS ===== */
-    .card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-    }
-    .card-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .badge {
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-    .badge-live { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
-      .badge-live::before { content: ''; display: inline-block; width: 6px; height: 6px; background: #ef4444; border-radius: 50%; margin-right: 5px; animation: pulse 1.5s infinite; }
-    .badge-upcoming { background: rgba(124,58,237,0.15); color: #a78bfa; }
-    .badge-completed { background: rgba(100,116,139,0.15); color: var(--text-dim); }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-    /* ===== LIVE SCORE ===== */
-    .live-banner {
-      background: linear-gradient(135deg, #1a0533 0%, #0f172a 100%);
-      border: 1px solid rgba(124,58,237,0.3);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 24px;
-      position: relative;
-      overflow: hidden;
-    }
-    .live-banner::before {
-      content: '';
-      position: absolute;
-      top: -40px; right: -40px;
-      width: 200px; height: 200px;
-      background: radial-gradient(circle, rgba(124,58,237,0.15), transparent 70%);
-    }
-    .live-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(239,68,68,0.15);
-      border: 1px solid rgba(239,68,68,0.4);
-      color: #f87171;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 4px 12px;
-      border-radius: 20px;
-      margin-bottom: 16px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .live-label::before { content: ''; width: 6px; height: 6px; background: #ef4444; border-radius: 50%; animation: pulse 1.5s infinite; }
-    .match-teams {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-    .team-block { text-align: center; flex: 1; }
-    .team-logo {
-      width: 64px; height: 64px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      margin: 0 auto 8px;
-      border: 2px solid var(--border);
-    }
-    .team-name { font-size: 18px; font-weight: 700; }
-    .team-score { font-size: 32px; font-weight: 700; color: var(--accent); }
-    .team-overs { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
-    .vs-block { text-align: center; }
-    .vs-text { font-size: 22px; font-weight: 700; color: var(--text-dim); }
-    .match-meta { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
-
-    .match-info-row {
-      display: flex;
-      gap: 12px;
-      margin-top: 16px;
-      flex-wrap: wrap;
-    }
-    .match-info-chip {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-    .match-info-chip strong { color: var(--text); }
-
-    /* ===== PREDICTION FORM ===== */
-    .predict-section { margin-top: 20px; }
-    .predict-label {
-      font-size: 14px;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-      font-weight: 500;
-    }
-    .predict-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-    .predict-btn {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      cursor: pointer;
-      transition: all 0.15s;
-      text-align: center;
-      color: var(--text);
-      font-size: 15px;
-      font-weight: 600;
-      font-family: inherit;
-    }
-    .predict-btn:hover { border-color: var(--primary); background: rgba(124,58,237,0.08); }
-    .predict-btn.selected { border-color: var(--primary); background: rgba(124,58,237,0.15); color: #a78bfa; }
-    .predict-btn .odds {
-      display: block;
-      font-size: 11px;
-      font-weight: 400;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-    .submit-predict {
-      width: 100%;
-      padding: 12px;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      transition: all 0.15s;
-    }
-    .submit-predict:hover { background: var(--primary-dark); }
-    .submit-predict:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* ===== MATCH LIST ===== */
-    .match-row {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .match-row:hover { border-color: rgba(124,58,237,0.4); }
-    .match-row.active { border-color: var(--primary); background: rgba(124,58,237,0.08); }
-    .match-row-teams { font-size: 15px; font-weight: 600; }
-    .match-row-meta { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
-    .match-row-right { text-align: right; }
-
-    /* ===== TABS ===== */
-    .tabs {
-      display: flex;
-      gap: 4px;
-      background: var(--bg3);
-      border-radius: 10px;
-      padding: 4px;
-      margin-bottom: 20px;
-    }
-    .tab {
-      flex: 1;
-      padding: 8px;
-      border-radius: 7px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      color: var(--text-muted);
-      border: none;
-      background: transparent;
-      font-family: inherit;
-      transition: all 0.15s;
-    }
-    .tab.active { background: var(--bg2); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
-
-    /* ===== PLAYER PREDICTION ===== */
-    .player-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 10px;
-    }
-    .player-card {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .player-card:hover { border-color: rgba(245,158,11,0.4); }
-    .player-card.selected { border-color: var(--accent); background: rgba(245,158,11,0.08); }
-    .player-avatar {
-      width: 48px; height: 48px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      margin: 0 auto 8px;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-    }
-    .player-name { font-size: 13px; font-weight: 600; }
-    .player-team { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-    .player-form {
-      display: flex;
-      gap: 3px;
-      justify-content: center;
-      margin-top: 6px;
-    }
-    .form-dot { width: 8px; height: 8px; border-radius: 50%; }
-
-    /* ===== SIDEBAR ===== */
-    .leaderboard-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .leaderboard-row:last-child { border-bottom: none; }
-    .rank {
-      width: 28px;
-      text-align: center;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-dim);
-    }
-    .rank.top { color: var(--accent); }
-    .lb-avatar {
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      background: var(--primary-light);
-      color: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: 700;
-    }
-    .lb-name { font-size: 14px; font-weight: 500; flex: 1; }
-    .lb-points { font-size: 14px; font-weight: 700; color: var(--accent); }
-
-    /* ===== LOGIN MODAL ===== */
-    #loginModal {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-    }
-    .modal-box {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 36px;
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
-    }
-    .modal-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-    .modal-sub { font-size: 15px; color: var(--text-muted); margin-bottom: 28px; }
-    .modal-input {
-      width: 100%;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 16px;
-      color: var(--text);
-      font-size: 15px;
-      font-family: inherit;
-      margin-bottom: 14px;
-      outline: none;
-      transition: border-color 0.15s;
-    }
-    .modal-input:focus { border-color: var(--primary); }
-    .modal-input::placeholder { color: var(--text-dim); }
-    .modal-btn {
-      width: 100%;
-      padding: 13px;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-      transition: background 0.15s;
-    }
-    .modal-btn:hover { background: var(--primary-dark); }
-
-    /* ===== TOAST ===== */
-    #toast {
-      position: fixed;
-      bottom: 24px; right: 24px;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 20px;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text);
-      box-shadow: var(--card-shadow);
-      transform: translateY(80px);
-      opacity: 0;
-      transition: all 0.3s;
-      z-index: 999;
-      max-width: 320px;
-    }
-    #toast.show { transform: translateY(0); opacity: 1; }
-    #toast.success { border-color: rgba(16,185,129,0.4); }
-    #toast.error { border-color: rgba(239,68,68,0.4); }
-
-    /* ===== LOADING ===== */
-    .spinner {
-      width: 40px; height: 40px;
-      border: 3px solid var(--border);
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 40px auto;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-    .section-icon {
-      width: 32px; height: 32px;
-      border-radius: 8px;
-      background: rgba(124,58,237,0.15);
-      color: #a78bfa;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-    }
-    .section-title { font-size: 16px; font-weight: 600; }
-
-    .api-notice {
-      background: rgba(245,158,11,0.08);
-      border: 1px solid rgba(245,158,11,0.2);
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 13px;
-      color: var(--accent);
-      margin-bottom: 16px;
-    }
-
-    .prediction-success {
-      background: rgba(16,185,129,0.08);
-      border: 1px solid rgba(16,185,129,0.2);
-      border-radius: 10px;
-      padding: 12px 16px;
-      font-size: 14px;
-      color: #34d399;
-      text-align: center;
-      display: none;
-      margin-top: 12px;
-    }
-
-    .user-chip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-size: 13px;
-    }
-    .user-dot {
-      width: 8px; height: 8px;
-      background: var(--success);
-      border-radius: 50%;
-    }
+    body { font-family: Arial, sans-serif; margin: 0; background: #0d1321; color: #fff; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .card { background: #1d2d44; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+    input, select, button { width: 100%; padding: 10px; margin: 6px 0; border-radius: 8px; border: none; }
+    button { background: #3e5c76; color: white; cursor: pointer; }
+    button:hover { background: #4f7090; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .muted { color: #c0d6df; font-size: 14px; }
+    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-
-<!-- LOGIN MODAL -->
-<div id="loginModal">
-  <div class="modal-box">
-    <div style="font-size: 48px; margin-bottom: 16px;">🏏</div>
-    <div class="modal-title">CricPredict</div>
-    <div class="modal-sub">Predict IPL scores, Man of the Match &amp; more. Win points!</div>
-    <input class="modal-input" id="loginName" placeholder="Your name" />
-    <input class="modal-input" id="loginEmail" placeholder="Email (optional)" />
-    <button class="modal-btn" onclick="joinGame()">Join the Game →</button>
-  </div>
-</div>
-
-<!-- HEADER -->
-<header>
-  <div class="logo">
-    <div class="logo-icon">🏏</div>
-    CricPredict
-  </div>
-  <div class="header-right">
-    <div class="user-chip" id="userChip" style="display:none">
-      <div class="user-dot"></div>
-      <span id="userNameDisplay"></span>
-      <span style="color:var(--accent); font-weight:600" id="userPointsDisplay">0 pts</span>
-    </div>
-    <button class="btn btn-ghost" onclick="document.getElementById('loginModal').style.display='flex'" id="loginBtn">Sign In</button>
-  </div>
-</header>
-
-<!-- MAIN -->
-<div class="main-layout">
-  <!-- LEFT COLUMN -->
-  <div>
-    <!-- LIVE SCORE BANNER -->
-    <div class="live-banner" id="liveBanner">
-      <div class="live-label">Live Now</div>
-      <div id="liveScoreContent">
-        <div class="spinner"></div>
-      </div>
-    </div>
-
-    <!-- TABS -->
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('matches', this)">All Matches</button>
-      <button class="tab" onclick="switchTab('predict', this)">My Predictions</button>
-      <button class="tab" onclick="switchTab('motm', this)">Man of Match</button>
-    </div>
-
-    <!-- MATCHES TAB -->
-    <div id="tab-matches">
-      <div class="api-notice">
-        🔌 Live data powered by CricAPI (free tier). Scores refresh every 60s.
-      </div>
-      <div id="matchListContent"><div class="spinner"></div></div>
-    </div>
-
-    <!-- PREDICT TAB -->
-    <div id="tab-predict" style="display:none">
-      <div class="section-header">
-        <div class="section-icon">🎯</div>
-        <div class="section-title">Score Prediction — Select a Match</div>
-      </div>
-      <div id="predictMatchList"><div class="spinner"></div></div>
-      <div id="scorePredictor" style="display:none">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title" id="predictMatchTitle">CSK vs MI</div>
-            <span class="badge badge-upcoming">Upcoming</span>
-          </div>
-          <div class="predict-label">Who will win?</div>
-          <div class="predict-grid">
-            <button class="predict-btn" id="team1Btn" onclick="selectWinner('team1')">
-              <span id="team1Name">CSK</span>
-              <span class="odds" id="team1Odds">Predict Win</span>
-            </button>
-            <button class="predict-btn" id="team2Btn" onclick="selectWinner('team2')">
-              <span id="team2Name">MI</span>
-              <span class="odds" id="team2Odds">Predict Win</span>
-            </button>
-          </div>
-          <div class="predict-label" style="margin-top:16px">Predict first-innings score (runs)</div>
-          <div style="display:flex; gap:10px; align-items:center; margin-bottom:16px">
-            <input type="number" id="scoreGuess" class="modal-input" style="margin:0; width:120px; text-align:center" placeholder="e.g. 185" min="0" max="400" />
-            <span style="color:var(--text-muted); font-size:14px">runs in 20 overs</span>
-          </div>
-          <button class="submit-predict" onclick="submitPrediction()">Submit Prediction</button>
-          <div class="prediction-success" id="predSuccess">✅ Prediction submitted! Check back after the match.</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- MAN OF MATCH TAB -->
-    <div id="tab-motm" style="display:none">
-      <div class="section-header">
-        <div class="section-icon">⭐</div>
-        <div class="section-title">Man of the Match Prediction</div>
-      </div>
-      <div class="api-notice">Select an upcoming match, then pick your star player.</div>
-      <div id="motmMatchSelector" style="margin-bottom:16px"></div>
-      <div id="motmPlayers" style="display:none">
-        <div class="predict-label">Select the player you think will be Man of the Match:</div>
-        <div class="player-grid" id="playerGrid"></div>
-        <button class="submit-predict" style="margin-top:16px" onclick="submitMOTM()">Predict MOTM</button>
-        <div class="prediction-success" id="motmSuccess">⭐ MOTM prediction saved! Points awarded after the match.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <!-- MY PREDICTIONS -->
-    <div class="card" id="myPredCard" style="display:none">
-      <div class="card-header">
-        <div class="card-title">My Predictions</div>
-        <span id="predCount" class="badge badge-upcoming">0</span>
-      </div>
-      <div id="myPredList"></div>
-    </div>
-
-    <!-- LEADERBOARD -->
+  <div class="container">
+    <h1>🏏 IPL Manual Prediction Platform</h1>
     <div class="card">
-      <div class="card-header">
-        <div class="card-title">Leaderboard</div>
-        <span class="badge badge-live">Live</span>
-      </div>
-      <div id="leaderboardContent"><div class="spinner" style="margin: 20px auto;"></div></div>
+      <h3>Login</h3>
+      <input id="name" placeholder="Enter your name" />
+      <label><input type="checkbox" id="isAdmin" style="width:auto"/> Login as admin</label>
+      <button onclick="login()">Continue</button>
+      <p id="userState" class="muted"></p>
     </div>
 
-    <!-- SERIES INFO -->
+    <div class="grid">
+      <div class="card">
+        <h3>Prediction Phase</h3>
+        <select id="matchSelect"></select>
+        <input id="tossWinner" placeholder="Who will win toss?" />
+        <input id="matchWinner" placeholder="Who will win match?" />
+        <input id="motm" placeholder="Man of the Match" />
+        <input id="mostWickets" placeholder="Most wickets player" />
+        <input id="highestRuns" placeholder="Highest runs player" />
+        <input id="team1Score" type="number" placeholder="Predicted team1 score" />
+        <input id="team2Score" type="number" placeholder="Predicted team2 score" />
+        <button onclick="submitPrediction()">Submit Prediction</button>
+        <p id="predictMsg" class="muted"></p>
+      </div>
+
+      <div class="card">
+        <h3>Admin Result Entry</h3>
+        <input id="adminToken" placeholder="Admin token" />
+        <select id="adminMatchSelect"></select>
+        <input id="actualTossWinner" placeholder="Actual toss winner" />
+        <input id="actualMatchWinner" placeholder="Actual match winner" />
+        <input id="actualMotm" placeholder="Actual Man of the Match" />
+        <input id="actualMostWickets" placeholder="Player with most wickets" />
+        <input id="actualHighestRuns" placeholder="Player with highest runs" />
+        <input id="finalTeam1Score" type="number" placeholder="Final team1 score" />
+        <input id="finalTeam2Score" type="number" placeholder="Final team2 score" />
+        <button onclick="submitResult()">Save Result + Evaluate</button>
+        <button onclick="finalizeResult()">Finalize Result</button>
+        <p id="adminMsg" class="muted"></p>
+      </div>
+    </div>
+
     <div class="card">
-      <div class="card-header">
-        <div class="card-title">Current Series</div>
-      </div>
-      <div id="seriesInfo" style="font-size: 14px; color: var(--text-muted); line-height: 1.7;">
-        Loading series info...
-      </div>
+      <h3>Leaderboard</h3>
+      <div id="leaderboard"></div>
+    </div>
+
+    <div class="card">
+      <h3>User vs Actual</h3>
+      <div id="comparison" class="muted">Submit prediction and wait for admin result.</div>
     </div>
   </div>
-</div>
 
-<div id="toast"></div>
-
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
